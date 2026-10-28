@@ -225,6 +225,10 @@ zpl-rest 内置 MCP（Model Context Protocol）服务器，AI 工具（WorkBuddy
 
 API 与网页界面中的标签宽高统一以毫米（mm）表示。ZPL 模板本身使用点（dot）；按打印机分辨率（每毫米点数，dpmm）把毫米换算成点。以 8dpmm（300dpi）打印机为例：84.8 mm × 8 = 1002 点，打印宽度写 `^PW1002`。
 
+## 开发笔记
+
+项目现状、设计契约、技术债与下一轮路线图见 [docs/PROJECT-STATE.md](docs/PROJECT-STATE.md)。改动打印位置、队列调度或打印机发现之前，请先读这份文档。
+
 ## 许可证
 
 [MIT](LICENSE)

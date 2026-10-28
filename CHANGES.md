@@ -1,5 +1,12 @@
 # zpl-rest 变更记录
 
+## 2026-10-28 项目收尾：现状梳理与交接文档
+
+- 新增 `docs/PROJECT-STATE.md`（约 300 行）：定位、交付物与入口、三种起服务方式、测试与纪律、代码地图（逐文件职责）、六个 collection 的字段说明、五条硬契约（mm 单位 / 左上角坐标 / ^LH 合成 / 预览与打印分离 / 打印设置两级覆盖）、已知问题 D1–D10、三批优化路线、排障手册、交接清单、下次开工前 30 分钟清单。
+- 三份 README 各加一节「Development notes / 开发笔记 / ملاحظات التطوير」指向该文档，标题数仍三语一致（各 13 个 h2）。
+- 收尾核验：`node test/dev_func_test.js` **88/88 通过**（45.7s），且测试前后项目自身 `db/` 与 `config.json` 的 md5 完全一致（未污染）；工作区干净，HEAD `ea53cb3` 已推送到远端。
+- 记录在案的技术债（未修，留待下一轮）：REST 无鉴权且默认对全网监听、`config.json` 入公开仓库、队列历史无上限、`main.js` 2138 行单体、几何逻辑前后端双份、无 CI / `npm test` 为空、Dockerfile 仍为 node:16-alpine。
+
 ## 2026-10-28 README 精简 + Release 便携包 + GitHub Pages
 
 - 三份 README（en/zh/ar）删除 Contributing、Credits、Support the project 三个章节（含问卷与赞助链接），保留 License。

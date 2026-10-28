@@ -225,6 +225,10 @@ Label previews are rendered locally by the built-in ZPL renderer (zpl-renderer-j
 
 Label width and height are handled in millimetres (mm) throughout the API and web UI. ZPL templates themselves use dots; convert mm to dots with the printer density in dots per mm (dpmm). Example for an 8dpmm (300dpi) printer: 84.8 mm x 8 = 1002 dots, printed width `^PW1002`.
 
+## Development notes
+
+Current state, design contracts, known technical debt and the roadmap for the next iteration are documented in [docs/PROJECT-STATE.md](docs/PROJECT-STATE.md) (Chinese). Read it before changing print positioning, the queue scheduler or printer discovery.
+
 ## License
 
 [MIT](LICENSE)
