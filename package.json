@@ -1,11 +1,22 @@
 {
   "name": "zpl-rest",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Webservice for Zebra ZPL printing",
   "main": "main.js",
+  "bin": "main.js",
   "scripts": {
     "start": "node main.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build:win": "node scripts/build_win.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:win:portable": "node scripts/build_win_portable.js"
+  },
+  "pkg": {
+    "assets": [
+      "views/**/*",
+      "html/**/*",
+      "node_modules/systray2/traybin/tray_windows_release.exe",
+      "node_modules/systray2/package.json"
+    ]
   },
   "keywords": [
     "zebra",
@@ -18,14 +29,21 @@
     "registry": "https://npm.pkg.github.com/"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "cors": "^2.8.5",
     "diskdb": "^0.1.17",
     "ejs": "^3.1.10",
     "express": "^4.22.1",
     "express-session": "^1.17.0",
     "mustache": "^3.1.0",
-    "request": "^2.88.0",
     "serve-favicon": "^2.5.0",
-    "websocket": "^1.0.30"
+    "systray2": "^2.1.4",
+    "websocket": "^1.0.30",
+    "xlsx": "^0.18.5",
+    "zod": "^4.6.7",
+    "zpl-renderer-js": "^5.0.0"
+  },
+  "devDependencies": {
+    "@yao-pkg/pkg": "^6.24.0"
   }
 }

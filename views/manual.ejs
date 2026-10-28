@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- early dir/lang bootstrap: apply saved language direction before first paint,
+       independent of the later i18n.js (works even if scripts are cached/failed) -->
+  <script>
+    (function() {
+      try {
+        var l = new URLSearchParams(location.search).get('lang') || localStorage.getItem('lang') || 'en';
+        document.documentElement.setAttribute('lang', l);
+        if (l === 'ar') document.documentElement.setAttribute('dir', 'rtl');
+      } catch (e) {}
+    })();
+  </script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title data-i18n="title.manual">restZPL 标签打印</title>
+
+  <!-- Custom fonts for this template-->
+  <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link href="css/sb-admin-2.min.css" rel="stylesheet">
+  <link href="css/custom.css" rel="stylesheet">
+  <link href="vendor/toastr/toastr.min.css" rel="stylesheet">
+
+  <style>
+    /* SB Admin 2 sets overflow-x: hidden on #content-wrapper, which turns it
+       into a scroll container and silently kills position: sticky inside it.
+       clip keeps the horizontal clipping without creating one, so the TOC can
+       stay pinned while the article scrolls. The two-ID selector is required to
+       outrank the template's own "#wrapper #content-wrapper" rule. */
+    #wrapper #content-wrapper { overflow-x: clip; overflow-y: visible; }
+
+    /* sticky table of contents: stays in view while the article scrolls */
+    .manual-toc-card {
+      position: sticky;
+      top: 24px;
+      display: flex;
+      flex-direction: column;
+      max-height: calc(100vh - 48px);
+    }
+    /* a long TOC scrolls on its own instead of running off the viewport */
+    .manual-toc-card .card-body { overflow-y: auto; }
+    .manual-toc { display: flex; flex-direction: column; }
+    .manual-toc-link {
+      display: block;
+      padding: .4rem .6rem;
+      border-radius: .35rem;
+      color: #5a5c69;
+      font-size: .875rem;
+      text-decoration: none;
+      border-left: 3px solid transparent;
+    }
+    .manual-toc-link:hover { background: #f8f9fc; color: #4e73df; text-decoration: none; }
+    .manual-toc-link.active {
+      background: #eef2fb;
+      color: #4e73df;
+      border-left-color: #4e73df;
+      font-weight: 700;
+    }
+    /* anchors land below the top edge instead of flush against it */
+    .manual-section { scroll-margin-top: 24px; }
+    .manual-body { font-size: .925rem; color: #5a5c69; line-height: 1.7; }
+    .manual-body p { margin-bottom: .75rem; }
+    .manual-body ul { padding-left: 1.15rem; margin-bottom: .9rem; }
+    .manual-body li { margin-bottom: .3rem; }
+    .manual-body code {
+      background: #f1f3f9;
+      color: #2e59d9;
+      padding: .1rem .3rem;
+      border-radius: .2rem;
+      font-size: .85em;
+      word-break: break-word;
+    }
+    .manual-body .manual-h {
+      margin: 1.4rem 0 .6rem;
+      font-size: .8rem;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: #858796;
+    }
+    .manual-table { font-size: .875rem; }
+    .manual-table th { background: #f8f9fc; font-weight: 700; color: #5a5c69; }
+    .manual-table td, .manual-table th { vertical-align: middle !important; }
+    .manual-code {
+      background: #2c2f3a;
+      color: #e6e8ef;
+      padding: .85rem 1rem;
+      border-radius: .35rem;
+      font-size: .82rem;
+      line-height: 1.55;
+      overflow-x: auto;
+    }
+    .manual-empty { color: #858796; }
+    @media (max-width: 991.98px) {
+      .manual-toc-card { position: static; }
+    }
+  </style>
+
+</head>
+
+<body id="page-top" class="sidebar-toggled">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion toggled" id="accordionSidebar">
+
+      <!-- Sidebar - Brand -->
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
+        <div class="sidebar-brand-icon rotate-n-15">
+          <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">rest<sup>ZPL</sup></div>
+      </a>
+
+      <!-- Divider -->
+      <hr class="sidebar-divider my-0">
+
+      <li class="nav-item">
+        <a class="nav-link" href="/">
+          <i class="fas fa-fw fa-tachometer-alt"></i>
+          <span data-i18n="nav.overview">Overview</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/queue">
+          <i class="fas fa-fw fa-list-ol"></i>
+          <span data-i18n="nav.queue">Queue</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/label">
+          <i class="fas fa-fw fa-tags"></i>
+          <span data-i18n="nav.label">Label</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/printer">
+          <i class="fas fa-fw fa-print"></i>
+          <span data-i18n="nav.printer">Printer</span></a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/manual">
+          <i class="fas fa-fw fa-book"></i>
+          <span data-i18n="nav.manual">Manual</span></a>
+      </li>
+
+      <!-- Divider -->
+      <hr class="sidebar-divider d-none d-md-block">
+
+      <!-- Sidebar Toggler (Sidebar) -->
+      <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
+
+    </ul>
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content" style="padding-top: 30px;">
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800" data-i18n="manual.title">Manual</h1>
+          </div>
+
+          <div class="row" id="manual-root">
+
+            <!-- Table of contents -->
+            <div class="col-lg-3 mb-4">
+              <div class="card shadow manual-toc-card">
+                <div class="card-body">
+                  <div class="input-group input-group-sm mb-3">
+                    <div class="input-group-prepend">
+                      <span class="input-group-text bg-white"><i class="fas fa-search text-gray-400"></i></span>
+                    </div>
+                    <input type="text" class="form-control" id="manual-search" data-i18n-placeholder="manual.search">
+                  </div>
+                  <div class="text-xs font-weight-bold text-uppercase text-gray-500 mb-2" data-i18n="manual.toc">Contents</div>
+                  <div class="manual-toc" id="manual-toc"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Article -->
+            <div class="col-lg-9">
+              <div id="manual-body"></div>
+              <p class="manual-empty text-center py-4 mb-0" id="manual-empty" data-i18n="manual.no_result"></p>
+            </div>
+
+          </div>
+
+        </div>
+        <!-- /.container-fluid -->
+
+      </div>
+      <!-- End of Main Content -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+  <!-- Scroll to Top Button-->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+  <!-- Insert this line above script imports  -->
+  <script>
+    if (typeof module === 'object') {
+      window.module = module;
+      module = undefined;
+    }
+  </script>
+
+  <!-- Bootstrap core JavaScript-->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <script src="vendor/toastr/toastr.min.js"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="js/sb-admin-2.min.js"></script>
+  <script src="js/main.js"></script>
+
+  <!-- i18n: loads before page scripts so t() is available everywhere -->
+  <script src="js/i18n.js"></script>
+  <script src="js/locales/en.js"></script>
+  <script src="js/locales/zh.js"></script>
+  <script src="js/locales/ar.js"></script>
+
+  <!-- Insert this line after script imports -->
+  <script>
+    if (window.module) module = window.module;
+    var config = <%- JSON.stringify(config) %>;
+  </script>
+
+  <!-- manual content + renderer (content is long-form, kept out of the locale files) -->
+  <script src="js/manual_content.js"></script>
+  <script src="js/manual.js"></script>
+
+</body>
+
+</html>

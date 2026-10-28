@@ -126,7 +126,21 @@ $(document).ready(function() {
       });
 
       //
-      components['#errorTable'] = $('#errorTable').DataTable();
+      // built-in DataTables controls (search box, length menu, info line,
+      // pagination, empty states) are translated with the page language;
+      // the table is rebuilt on language change because switching reloads
+      components['#errorTable'] = $('#errorTable').DataTable({
+        language: {
+          search: t('dt.search'),
+          lengthMenu: t('dt.length'),
+          info: t('dt.info'),
+          infoEmpty: t('dt.info_empty'),
+          infoFiltered: t('dt.info_filtered'),
+          emptyTable: t('dt.empty'),
+          zeroRecords: t('dt.zero'),
+          paginate: { previous: t('dt.prev'), next: t('dt.next') }
+        }
+      });
 
       // $('.charts').matchHeight(false);
 

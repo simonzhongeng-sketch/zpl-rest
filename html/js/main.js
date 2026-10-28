@@ -1,13 +1,25 @@
 $(document).ready(function() {
+  // always start at the top of the page: browsers restore the last scroll
+  // position per URL, which made revisiting a page (e.g. Queue) jump to the
+  // bottom where the user left off
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
   updatePrinterDropdown();
   updateLabelDropdown();
 
-  $('#timespan').text($('.time-item[data-time="'+$('#timespan').data("time")+'"]').text());
+  // timespan label: always translated (dashboard "last N hours/days" picker);
+  // only the label span is replaced so its data-i18n binding stays intact
+  var timespanKeys = { 24: 'dash.ts24', 168: 'dash.ts7d', 720: 'dash.ts30d' };
+  function setTimespanLabel(hours) {
+    $('#timespan-label').text(t(timespanKeys[hours] || 'dash.ts24'));
+  }
+  setTimespanLabel($('#timespan').data("time"));
 
   $('.time-item').click(function() {
     $this = $(this);
     var hours = parseInt($this.data("time"));
-    $('#timespan').text($this.text());
+    setTimespanLabel(hours);
     $('#timespan').data("time", hours);
 
     $.ajax({
@@ -16,7 +28,7 @@ $(document).ready(function() {
       contentType: 'application/json',
       dataType: 'json',
       error: function(data) {
-        toastr.error('failed to update timespan')
+        toastr.error(t('msg.update_timespan_failed'))
       }
     });
 
@@ -27,7 +39,7 @@ $(document).ready(function() {
   $('.copy-button').click(function(){
     $this = $(this);
     if(!$this.data("target")){
-      toastr.error("no target defined for this button")
+      toastr.error(t('msg.no_copy_target'))
       return;
     }
 
@@ -37,7 +49,7 @@ $(document).ready(function() {
     $temp.val($(element).val()).select();
     document.execCommand("copy");
     $temp.remove();
-    toastr.info("copied to clipboard");
+    toastr.info(t('msg.copied'));
   });
 
 });

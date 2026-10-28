@@ -1,1 +1,12 @@
-{}
+{
+  "port": 18420,
+  "websocket_port": 18421,
+  "public": true,
+  "secret": "top_secret",
+  "mcp_port": 18422,
+  "mcp_token": "",
+  "tray": true,
+  "open_browser": true,
+  "discovery_interval": 120,
+  "ui_lang": "zh"
+}

@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- early dir/lang bootstrap: apply saved language direction before first paint,
+       independent of the later i18n.js (works even if scripts are cached/failed) -->
+  <script>
+    (function() {
+      try {
+        var l = new URLSearchParams(location.search).get('lang') || localStorage.getItem('lang') || 'en';
+        document.documentElement.setAttribute('lang', l);
+        if (l === 'ar') document.documentElement.setAttribute('dir', 'rtl');
+      } catch (e) {}
+    })();
+  </script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title data-i18n="title.label_edit">restZPL 标签打印</title>
+
+  <!-- Custom fonts for this template-->
+  <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link href="/css/sb-admin-2.min.css" rel="stylesheet">
+  <link href="/css/custom.css" rel="stylesheet">
+  <link href="/vendor/toastr/toastr.min.css" rel="stylesheet">
+
+  <style>
+    #ve-canvas {
+      background-color: #fff;
+      background-image:
+        linear-gradient(to right, rgba(78, 115, 223, 0.35) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(78, 115, 223, 0.35) 1px, transparent 1px),
+        linear-gradient(to right, rgba(0, 0, 0, 0.07) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(0, 0, 0, 0.07) 1px, transparent 1px);
+      background-size: 40px 40px, 40px 40px, 4px 4px, 4px 4px;
+      box-shadow: 0 0 6px rgba(0,0,0,0.15);
+    }
+    #ve-canvas > div { user-select: none; }
+  </style>
+</head>
+
+<body id="page-top" class="sidebar-toggled">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion toggled" id="accordionSidebar">
+
+      <!-- Sidebar - Brand -->
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
+        <div class="sidebar-brand-icon rotate-n-15">
+          <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">rest<sup>ZPL</sup></div>
+      </a>
+
+      <!-- Divider -->
+      <hr class="sidebar-divider my-0">
+
+      <li class="nav-item">
+        <a class="nav-link" href="/">
+          <i class="fas fa-fw fa-tachometer-alt"></i>
+          <span data-i18n="nav.overview">Overview</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/queue">
+          <i class="fas fa-fw fa-list-ol"></i>
+          <span data-i18n="nav.queue">Queue</span></a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/label">
+          <i class="fas fa-fw fa-tags"></i>
+          <span data-i18n="nav.label">Label</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/printer">
+          <i class="fas fa-fw fa-print"></i>
+          <span data-i18n="nav.printer">Printer</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/manual">
+          <i class="fas fa-fw fa-book"></i>
+          <span data-i18n="nav.manual">Manual</span></a>
+      </li>
+
+      <!-- Divider -->
+      <hr class="sidebar-divider d-none d-md-block">
+
+      <!-- Sidebar Toggler (Sidebar) -->
+      <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
+
+    </ul>
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content" style="padding-top: 30px;">
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800" data-i18n="le.title">Edit Label</h1>
+            <div class="d-flex align-items-center">
+              <input type="file" id="label-import-file" accept=".json,application/json" style="display:none;">
+              <button class="btn btn-sm btn-outline-secondary mr-2" id="label-import" title="Load a label JSON file into the editor"><i class="fas fa-file-import fa-sm"></i> <span data-i18n="label.import">Import</span></button>
+              <button class="btn btn-sm btn-outline-secondary mr-2" id="label-export" title="Download the current label as JSON"><i class="fas fa-file-export fa-sm"></i> <span data-i18n="label.export">Export</span></button>
+              <button class="btn btn-sm btn-secondary" data-i18n="le.back" onclick="location='/label'"><i class="fas fa-arrow-left fa-sm"></i> Back to List</button>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-12">
+
+              <!-- Label Info -->
+              <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                  <h6 class="m-0 font-weight-bold text-primary" data-i18n="le.info">Label Info</h6>
+                </div>
+                <div class="card-body">
+                  <!-- group: basic info (3 + 4 + 4 + ... each row sums to 12) -->
+                  <h6 class="text-muted text-uppercase small mb-2" data-i18n="le.group_basic">Basic</h6>
+                  <div class="row">
+                    <div class="col-lg-4 col-md-6">
+                      <div class="form-group">
+                        <label for="edit-name" data-i18n="th.name">Name</label>
+                        <input type="text" class="form-control" id="edit-name" data-i18n-placeholder="le.name_ph" placeholder="Label Name">
+                      </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6" id="edit-type-group">
+                      <div class="form-group">
+                        <label for="edit-type" data-i18n="th.type">Type</label>
+                        <select class="form-control" id="edit-type">
+                          <option value="visual" selected data-i18n="le.visual">Visual</option>
+                          <option value="zpl_raw" data-i18n="le.raw_zpl">Raw ZPL</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6">
+                      <div class="form-group">
+                        <label for="edit-printer" data-i18n="le.bound_printer">Bound Printer</label>
+                        <select class="form-control" id="edit-printer">
+                          <option value="" data-i18n="le.select_printer">-- select printer --</option>
+                        </select>
+                        <small class="text-muted" data-i18n="le.printer_hint">this label prints on this printer</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-3 col-md-3">
+                      <div class="form-group">
+                        <label for="edit-width" data-i18n="le.width">Width (mm)</label>
+                        <input type="number" step="0.1" class="form-control" id="edit-width" value="84.8">
+                      </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3">
+                      <div class="form-group">
+                        <label for="edit-height" data-i18n="le.height">Height (mm)</label>
+                        <input type="number" step="0.1" class="form-control" id="edit-height" value="23.8">
+                      </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3">
+                      <div class="form-group">
+                        <label for="edit-cols" data-i18n="le.cols">Per Row</label>
+                        <input type="number" min="1" max="10" step="1" class="form-control" id="edit-cols" value="1" title="labels per row (multi-label media)">
+                      </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3">
+                      <div class="form-group">
+                        <label for="edit-rows" data-i18n="le.rows">Rows</label>
+                        <input type="number" min="0" max="100" step="1" class="form-control" id="edit-rows" value="0" title="0 = continuous roll, decided by the value count">
+                      </div>
+                    </div>
+                  </div>
+                  <!-- 位置微调：页边距 + 打印偏移。上/左边距与偏移合成标签级一条
+                       ^LH，再叠加打印机设置里的「左侧位置 / 标签顶部位置」（基础
+                       原点）；右/下边距仅作记录，永不进 ZPL。预览不体现该偏移。 -->
+                  <h6 class="text-muted text-uppercase small mb-2" data-i18n="le.group_adjust">Fine Adjustment</h6>
+                  <div class="row">
+                    <div class="col-lg-2 col-md-3">
+                      <div class="form-group mb-2">
+                        <label for="ve-margin-top" data-i18n="le.margin_top">Top</label>
+                        <input type="number" min="0" step="0.1" class="form-control" id="ve-margin-top" value="0">
+                      </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3">
+                      <div class="form-group mb-2">
+                        <label for="ve-margin-right" data-i18n="le.margin_right">Right</label>
+                        <input type="number" min="0" step="0.1" class="form-control" id="ve-margin-right" value="0">
+                      </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3">
+                      <div class="form-group mb-2">
+                        <label for="ve-margin-bottom" data-i18n="le.margin_bottom">Bottom</label>
+                        <input type="number" min="0" step="0.1" class="form-control" id="ve-margin-bottom" value="0">
+                      </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3">
+                      <div class="form-group mb-2">
+                        <label for="ve-margin-left" data-i18n="le.margin_left">Left</label>
+                        <input type="number" min="0" step="0.1" class="form-control" id="ve-margin-left" value="0">
+                      </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3">
+                      <div class="form-group mb-2">
+                        <label for="ve-offset-x" data-i18n="le.offset_x">Offset X</label>
+                        <input type="number" step="0.1" class="form-control" id="ve-offset-x" value="0">
+                      </div>
+                    </div>
+                    <div class="col-lg-2 col-md-3">
+                      <div class="form-group mb-2">
+                        <label for="ve-offset-y" data-i18n="le.offset_y">Offset Y</label>
+                        <input type="number" step="0.1" class="form-control" id="ve-offset-y" value="0">
+                      </div>
+                    </div>
+                  </div>
+                  <div class="row">
+                    <div class="col-lg-12">
+                      <small class="text-muted d-block" data-i18n="le.offset_hint">Top/left margins and offsets are compiled into one ^LH on top of the printer's base origin; right/bottom are notes only</small>
+                      <small class="text-muted d-block mt-1">
+                        <span data-i18n="le.print_origin">Print origin</span>:
+                        <span id="ve-lh-badge" class="font-weight-bold">^LH 0,0</span>
+                      </small>
+                    </div>
+                  </div>
+                  <hr class="mt-1 mb-3">
+                  <!-- 打印设置（位置微调见上，打印机基础原点在打印机设置里） -->
+                  <!-- print settings (visual templates only) -->
+                  <h6 class="text-muted text-uppercase small mb-2" data-i18n="le.print_settings">Print Settings</h6>
+                  <div class="row" id="ve-printsettings-block">
+                    <div class="col-lg-3 col-md-3">
+                      <div class="form-group">
+                        <label for="ve-mode" data-i18n="le.print_mode">Print Mode</label>
+                        <select class="form-control" id="ve-mode">
+                          <option value="thermal_transfer" selected data-i18n="mode.tt">Thermal Transfer</option>
+                          <option value="direct_thermal" data-i18n="mode.dt">Direct Thermal</option>
+                          <option value="none" data-i18n="mode.none">Use printer default</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3">
+                      <div class="form-group">
+                        <label for="ve-darkness" data-i18n="le.darkness">Darkness</label>
+                        <input type="number" step="1" class="form-control" id="ve-darkness" value="0">
+                      </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3">
+                      <div class="form-group">
+                        <label for="ve-speed" data-i18n="le.speed">Speed</label>
+                        <input type="number" step="1" class="form-control" id="ve-speed" value="2">
+                      </div>
+                    </div>
+                    <div class="col-lg-3 col-md-3">
+                      <div class="form-group">
+                        <label for="ve-quantity" data-i18n="le.qty">Qty</label>
+                        <input type="number" step="1" class="form-control" id="ve-quantity" value="1">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Design: left = elements, middle = canvas, right = properties/preview tabs -->
+          <div class="card shadow mb-4" id="visual-design">
+            <div class="card-header py-3 d-sm-flex align-items-center justify-content-between">
+              <h6 class="m-0 font-weight-bold text-primary">
+                <span id="design-title-visual" data-i18n="le.design">Design (mm grid, drag to move)</span>
+                <span id="design-title-raw" data-i18n="le.zpl_code" style="display:none;">ZPL Code</span>
+              </h6>
+              <div>
+                <button class="btn btn-sm btn-primary" id="edit-save" data-i18n="btn.save">Save</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row">
+
+                <!-- left: common elements -->
+                <div class="col-lg-2 col-md-3" id="design-left">
+                  <div id="ve-elements-block">
+                    <h6 class="font-weight-bold" data-i18n="le.add_element">Add Element</h6>
+                    <div class="mb-3">
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="text" data-i18n="el.text">Text</button>
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="block" data-i18n="el.block">Block Text</button>
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="text_rev" data-i18n="el.text_rev">Inverted Text</button>
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="datetime" data-i18n="el.datetime">Date / Time</button>
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="barcode" data-i18n="el.barcode">Barcode</button>
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="code39" data-i18n="el.code39">Code39</button>
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="qrcode" data-i18n="el.qr">QR</button>
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="datamatrix" data-i18n="el.datamatrix">DataMatrix</button>
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="box" data-i18n="el.box">Box</button>
+                      <button class="btn btn-sm btn-outline-primary d-block w-100 mb-1 ve-add" data-type="line" data-i18n="el.line">Line</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- middle: canvas (visual) or raw ZPL editor -->
+                <div class="col-lg-6 col-md-9" id="design-middle">
+                  <div id="ve-canvas-wrap" style="overflow: auto; height: 520px; border: 1px solid #ddd; background: #f8f9fa; padding: 10px;">
+                    <!-- mm rulers scroll with the canvas: 1mm ticks, 5mm and
+                         10mm heavier, numbers every 10mm (JS fills them) -->
+                    <div id="ve-canvas-inner">
+                      <div id="ve-ruler-top" class="ve-ruler ve-ruler-top"></div>
+                      <div id="ve-ruler-left" class="ve-ruler ve-ruler-left"></div>
+                      <div id="ve-canvas" style="position: relative; cursor: default;"></div>
+                    </div>
+                  </div>
+                  <div id="raw-design" style="display: none;">
+                    <textarea class="form-control" id="edit-zpl" placeholder="^XA ... ^XZ" style="font-family: monospace; height: 520px;"></textarea>
+                    <small class="text-muted">Use ${variable} placeholders for data fields, e.g. ^FD${name}^FS</small>
+                  </div>
+                </div>
+
+                <!-- right: properties / preview tabs -->
+                <div class="col-lg-4 col-md-12" id="design-right">
+                  <ul class="nav nav-tabs mb-2" id="ve-tabs">
+                    <li class="nav-item">
+                      <a class="nav-link active" id="ve-tab-props-link" data-toggle="tab" href="#ve-tab-props" data-i18n="le.properties">Properties</a>
+                    </li>
+                    <li class="nav-item">
+                      <a class="nav-link" data-toggle="tab" href="#ve-tab-preview" data-i18n="btn.preview">Preview</a>
+                    </li>
+                  </ul>
+                  <div class="tab-content">
+                    <div class="tab-pane fade show active" id="ve-tab-props">
+                      <div id="ve-props" style="min-height: 60px;">
+                        <p class="text-muted" data-i18n="le.props_empty">Select an element on the canvas, or add one.</p>
+                      </div>
+                      <button class="btn btn-sm btn-danger btn-block mb-3" id="ve-delete" data-i18n="le.del_element">Delete Element</button>
+                      <h6 class="font-weight-bold" data-i18n="le.vars">Variables (xlsx headers)</h6>
+                      <div id="ve-vars" class="text-muted" data-i18n="le.vars_none">none</div>
+                    </div>
+                    <div class="tab-pane fade" id="ve-tab-preview">
+                      <div class="border rounded bg-light p-2">
+                        <img id="ve-img" class="img-fluid shadow w-100 label-preview" style="background:#fff; min-height:40px;" />
+                      </div>
+                      <div id="var-inputs" class="mt-2"><p class="text-muted" data-i18n="le.no_vars">no variables</p></div>
+                      <button class="btn btn-primary btn-block mt-2" id="edit-test" data-i18n="le.test_print">Test Print</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /.container-fluid -->
+
+      </div>
+      <!-- End of Main Content -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+  <!-- Scroll to Top Button-->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+  <!-- Bootstrap core JavaScript-->
+  <script src="/vendor/jquery/jquery.min.js"></script>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <script src="/vendor/toastr/toastr.min.js"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="/js/sb-admin-2.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/websocket.js"></script>
+
+  <!-- i18n: loads before page scripts so t() is available everywhere -->
+  <script src="/js/i18n.js"></script>
+  <script src="/js/locales/en.js"></script>
+  <script src="/js/locales/zh.js"></script>
+  <script src="/js/locales/ar.js"></script>
+
+  <script>
+    if (window.module) module = window.module;
+    var config = <%- JSON.stringify(config) %>;
+  </script>
+
+  <script src="/js/visual_editor.js"></script>
+  <script src="/js/label_edit.js"></script>
+
+</body>
+
+</html>

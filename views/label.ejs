@@ -2,6 +2,17 @@
 <html lang="en">
 
 <head>
+  <!-- early dir/lang bootstrap: apply saved language direction before first paint,
+       independent of the later i18n.js (works even if scripts are cached/failed) -->
+  <script>
+    (function() {
+      try {
+        var l = new URLSearchParams(location.search).get('lang') || localStorage.getItem('lang') || 'en';
+        document.documentElement.setAttribute('lang', l);
+        if (l === 'ar') document.documentElement.setAttribute('dir', 'rtl');
+      } catch (e) {}
+    })();
+  </script>
 
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -9,7 +20,7 @@
   <meta name="description" content="">
   <meta name="author" content="">
 
-  <title>Label</title>
+  <title data-i18n="title.label">restZPL 标签打印</title>
 
   <!-- Custom fonts for this template-->
   <link href="vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
@@ -17,6 +28,7 @@
 
   <!-- Custom styles for this template-->
   <link href="css/sb-admin-2.min.css" rel="stylesheet">
+  <link href="css/custom.css" rel="stylesheet">
   <link href="vendor/toastr/toastr.min.css" rel="stylesheet">
 </head>
 
@@ -29,7 +41,7 @@
     <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion toggled" id="accordionSidebar">
 
       <!-- Sidebar - Brand -->
-      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
         <div class="sidebar-brand-icon rotate-n-15">
           <i class="fas fa-laugh-wink"></i>
         </div>
@@ -42,22 +54,27 @@
       <li class="nav-item">
         <a class="nav-link" href="/">
           <i class="fas fa-fw fa-tachometer-alt"></i>
-          <span>Overview</span></a>
+          <span data-i18n="nav.overview">Overview</span></a>
       </li>
       <li class="nav-item">
-        <a class="nav-link" href="/reprint">
-          <i class="fas fa-fw fa-redo"></i>
-          <span>Reprint</span></a>
+        <a class="nav-link" href="/queue">
+          <i class="fas fa-fw fa-list-ol"></i>
+          <span data-i18n="nav.queue">Queue</span></a>
       </li>
       <li class="nav-item active">
         <a class="nav-link" href="/label">
           <i class="fas fa-fw fa-tags"></i>
-          <span>Label</span></a>
+          <span data-i18n="nav.label">Label</span></a>
       </li>
       <li class="nav-item">
         <a class="nav-link" href="/printer">
           <i class="fas fa-fw fa-print"></i>
-          <span>Printer</span></a>
+          <span data-i18n="nav.printer">Printer</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/manual">
+          <i class="fas fa-fw fa-book"></i>
+          <span data-i18n="nav.manual">Manual</span></a>
       </li>
 
       <!-- Divider -->
@@ -82,132 +99,35 @@
 
           <!-- Page Heading -->
           <div class="d-sm-flex align-items-center justify-content-between mb-4">
-            <h1 class="h3 mb-0 text-gray-800">Label</h1>
-          </div>
-
-          <div class="row">
-            <div class="col-lg-6">
-              <!-- Basic Card Example -->
-              <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary">Create Label</h6>
-                </div>
-                <div class="card-body">
-                  <form>
-                    <div class="form-group">
-                      <label for="newname">Name</label>
-                      <input type="text" class="form-control" id="newname" placeholder="Label Name">
-                    </div>
-                    <div class="form-row">
-                      <div class="form-group col-md-6 col-lg-6">
-                        <label for="newwidth">Width</label>
-                        <input type="number" class="form-control" id="newwidth" placeholder="Width in inches">
-                      </div>
-                      <div class="form-group col-md-6 col-lg-6">
-                        <label for="newheight">Height</label>
-                        <input type="number" class="form-control" id="newheight" placeholder="Height in inches">
-                      </div>
-                    </div>
-                    <div class="btn btn-primary" id="create">Create</div>
-                  </form>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-6">
-              <!-- Basic Card Example -->
-              <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary">Delete Label</h6>
-                </div>
-                <div class="card-body">
-                  <div class="dropdown">
-                    <button class="btn btn-secondary dropdown-toggle" id="delete-label" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                      Label
-                    </button>
-                    <div class="dropdown-menu label-dropdown" aria-labelledby="dropdownMenuButton">
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <h1 class="h3 mb-0 text-gray-800" data-i18n="label.title">Label</h1>
+            <button class="btn btn-sm btn-primary" id="new-label" data-i18n="label.new"><i class="fas fa-plus fa-sm"></i> New Label</button>
           </div>
 
           <div class="row">
             <div class="col-lg-12">
 
-              <!-- Basic Card Example -->
               <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                  <h6 class="m-0 font-weight-bold text-primary">Edit &amp; Test Label</h6>
+                <div class="card-header py-3 d-sm-flex align-items-center justify-content-between">
+                  <h6 class="m-0 font-weight-bold text-primary" data-i18n="label.list">Labels</h6>
+                  <div style="width: 300px;">
+                    <input type="text" class="form-control form-control-sm" id="label-search" data-i18n-placeholder="label.search_ph" placeholder="Search by name or printer...">
+                  </div>
                 </div>
                 <div class="card-body">
-                  <div class="row">
-                    <div class="col-lg-3 col-md-6">
-                      <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="test-printer" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          Printer
-                        </button>
-                        <div class="dropdown-menu printer-dropdown" aria-labelledby="dropdownMenuButton">
-                        </div>
-                      </div>
-                      <div class="form-group" id="printer-id-group" style="margin-top: 20px;">
-                        <label for="printerid">Printer ID</label>
-                        <div class="input-group mb-3">
-                          <input type="text" class="form-control" id="printerid" placeholder="ID for REST" readonly>
-                          <div class="input-group-append">
-                            <button class="btn btn-primary copy-button" type="button" data-target="printerid"><i class="fas fa-copy"></i></button>
-                          </div>
-                        </div>
-                      </div>
-                      <!--
-                      <div class="form-group print-param"><label for="param2">Name 2</label><input type="text" class="form-control" id="param2" placeholder="Param 2"></div>
-                      -->
-                      <button class="btn btn-primary" id="test" disabled>Test</button>
-                    </div>
-                    <div class="col-lg-5 col-md-6">
-                      <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="update-label" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                          Label
-                        </button>
-                        <div class="dropdown-menu label-dropdown" aria-labelledby="dropdownMenuButton">
-                        </div>
-                      </div>
-                      <div class="form-group" style="margin-top: 20px;">
-                        <label for="editid">Label ID</label>
-                        <div class="input-group mb-3">
-                          <input type="text" class="form-control" id="labelid" placeholder="ID for REST" readonly>
-                          <div class="input-group-append">
-                            <button class="btn btn-primary copy-button" type="button" data-target="labelid"><i class="fas fa-copy"></i></button>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label for="editname">Name</label>
-                        <input type="text" class="form-control" id="editname" placeholder="Label Name">
-                      </div>
-                      <div class="form-row">
-                        <div class="form-group col-md-6 col-lg-6">
-                          <label for="editwidth">Width</label>
-                          <input type="number" class="form-control" id="editwidth" placeholder="Width in inches">
-                        </div>
-                        <div class="form-group col-md-6 col-lg-6">
-                          <label for="editheight">Height</label>
-                          <input type="number" class="form-control" id="editheight" placeholder="Height in inches">
-                        </div>
-                      </div>
-                      <div class="form-group">
-                        <label for="editzpl">ZPL</label>
-                        <!-- <input type="text" class="form-control" id="newzpl" placeholder="New ZPL"> --->
-                        <textarea class="form-control" id="editzpl" placeholder="ZPL" rows="6"></textarea>
-                      </div>
-                      <button id="update" class="btn btn-primary">Update</button>
-                    </div>
-                    <div class="col-lg-4 col-md-12 ">
-                      <h6 class="m-0 font-weight-bold text-primary">Preview</h6>
-                        <div id="imgContainer" style="margin-top: 20px;">
-                          <img class="img-fluid shadow w-100" />
-                        </div>
-                    </div>
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-sm" id="label-table" width="100%" cellspacing="0">
+                      <thead>
+                        <tr>
+                          <th data-i18n="th.name">Name</th>
+                          <th style="width: 140px;" data-i18n="th.size">Size (mm)</th>
+                          <th style="width: 90px;" data-i18n="th.type">Type</th>
+                          <th style="width: 220px;" data-i18n="th.printer">Printer</th>
+                          <th style="width: 160px;" data-i18n="th.actions">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      </tbody>
+                    </table>
                   </div>
                 </div>
               </div>
@@ -232,24 +152,6 @@
     <i class="fas fa-angle-up"></i>
   </a>
 
-  <!-- Insert this line above script imports  -->
-  <script>
-    if (typeof module === 'object') {
-      window.module = module;
-      module = undefined;
-    }
-  </script>
-
-
-  <!-- Insert this line above script imports  -->
-  <script>
-    if (typeof module === 'object') {
-      window.module = module;
-      module = undefined;
-    }
-  </script>
-
-
   <!-- Bootstrap core JavaScript-->
   <script src="vendor/jquery/jquery.min.js"></script>
   <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
@@ -264,7 +166,12 @@
   <script src="js/main.js"></script>
   <script src="js/websocket.js"></script>
 
-  <!-- Insert this line after script imports -->
+  <!-- i18n: loads before page scripts so t() is available everywhere -->
+  <script src="js/i18n.js"></script>
+  <script src="js/locales/en.js"></script>
+  <script src="js/locales/zh.js"></script>
+  <script src="js/locales/ar.js"></script>
+
   <script>
     if (window.module) module = window.module;
     var config = <%- JSON.stringify(config) %>;

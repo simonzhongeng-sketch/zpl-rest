@@ -16,6 +16,25 @@ $(function() {
     try {
       var json = JSON.parse(message.data);
       console.log("Websocket send:", json);
+      // queue events use {source:'queue', event:'updated'|'paused'|'resumed'}
+      // without an action field, so they are dispatched separately
+      if (json.source == "queue") {
+        if (typeof onQueueUpdate === "function") {
+          onQueueUpdate(json);
+        }
+        return;
+      }
+      if (json.source == "printer" && json.event == "rebound") {
+        // the printer was re-found at a new address after its DHCP address
+        // changed (automatic rebind)
+        if (typeof toastr !== "undefined" && typeof t === "function") {
+          toastr.success(t('pr.rebounded', {
+            name: (json.data && json.data.name) || '',
+            new_address: (json.data && json.data.new_address) || ''
+          }));
+        }
+        if (typeof loadPrinters === "function") loadPrinters();
+      }
       if (json.action == "create" || json.action == "delete") {
         if (json.source == "printer") {
           if (typeof updatePrinterDropdown === "function") {

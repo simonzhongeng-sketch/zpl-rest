@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!-- early dir/lang bootstrap: apply saved language direction before first paint,
+       independent of the later i18n.js (works even if scripts are cached/failed) -->
+  <script>
+    (function() {
+      try {
+        var l = new URLSearchParams(location.search).get('lang') || localStorage.getItem('lang') || 'en';
+        document.documentElement.setAttribute('lang', l);
+        if (l === 'ar') document.documentElement.setAttribute('dir', 'rtl');
+      } catch (e) {}
+    })();
+  </script>
+
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title data-i18n="title.queue">restZPL 标签打印</title>
+
+  <!-- Custom fonts for this template-->
+  <link href="/vendor/fontawesome-free/css/all.min.css" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+  <!-- Custom styles for this template-->
+  <link href="/css/sb-admin-2.min.css" rel="stylesheet">
+  <link href="/css/custom.css" rel="stylesheet">
+  <link href="/vendor/toastr/toastr.min.css" rel="stylesheet">
+
+</head>
+
+<body id="page-top" class="sidebar-toggled">
+
+  <!-- Page Wrapper -->
+  <div id="wrapper">
+
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion toggled" id="accordionSidebar">
+
+      <!-- Sidebar - Brand -->
+      <a class="sidebar-brand d-flex align-items-center justify-content-center" href="/">
+        <div class="sidebar-brand-icon rotate-n-15">
+          <i class="fas fa-laugh-wink"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">rest<sup>ZPL</sup></div>
+      </a>
+
+      <!-- Divider -->
+      <hr class="sidebar-divider my-0">
+
+      <li class="nav-item">
+        <a class="nav-link" href="/">
+          <i class="fas fa-fw fa-tachometer-alt"></i>
+          <span data-i18n="nav.overview">Overview</span></a>
+      </li>
+      <li class="nav-item active">
+        <a class="nav-link" href="/queue">
+          <i class="fas fa-fw fa-list-ol"></i>
+          <span data-i18n="nav.queue">Queue</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/label">
+          <i class="fas fa-fw fa-tags"></i>
+          <span data-i18n="nav.label">Label</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/printer">
+          <i class="fas fa-fw fa-print"></i>
+          <span data-i18n="nav.printer">Printer</span></a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="/manual">
+          <i class="fas fa-fw fa-book"></i>
+          <span data-i18n="nav.manual">Manual</span></a>
+      </li>
+
+      <!-- Divider -->
+      <hr class="sidebar-divider d-none d-md-block">
+
+      <!-- Sidebar Toggler (Sidebar) -->
+      <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+      </div>
+
+    </ul>
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+      <!-- Main Content -->
+      <div id="content" style="padding-top: 30px;">
+
+        <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- Page Heading -->
+          <div class="d-sm-flex align-items-center justify-content-between mb-4">
+            <h1 class="h3 mb-0 text-gray-800" data-i18n="queue.title">Print Queue</h1>
+            <div class="d-flex align-items-center">
+              <span class="badge badge-success mr-2" id="parallel-badge" style="display:none;"></span>
+              <button class="btn btn-sm btn-primary mr-2" id="btn-add-queue" data-i18n="queue.add"><i class="fas fa-plus fa-sm"></i> Add Print Queue</button>
+            </div>
+          </div>
+
+          <div id="pause-banner" class="alert alert-warning py-2" style="display:none;"></div>
+
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                  <h6 class="m-0 font-weight-bold text-primary" data-i18n="queue.drafts">Queue Drafts <small class="text-muted" data-i18n="queue.drafts_sub">(saved task batches, opened on the New Print Queue page)</small></h6>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-sm">
+                      <thead>
+                        <tr>
+                          <th data-i18n="th.name">Name</th>
+                          <th data-i18n="th.template">Template</th>
+                          <th data-i18n="th.printer">Printer</th>
+                          <th style="width: 70px;" data-i18n="th.tasks">Tasks</th>
+                          <th style="width: 70px;" data-i18n="th.copies">Copies</th>
+                          <th style="width: 160px;" data-i18n="th.updated">Updated</th>
+                          <th style="width: 150px;" data-i18n="th.action">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="draft-list"></tbody>
+                    </table>
+                  </div>
+                  <p id="draft-empty" class="text-muted text-center mb-0" data-i18n="queue.drafts_empty">no drafts yet - stage tasks on the New Print Queue page and use Save Draft</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                  <h6 class="m-0 font-weight-bold text-primary" data-i18n="queue.items">Queue Items <small class="text-muted" data-i18n="queue.items_sub">(sorted by time)</small></h6>
+                  <div>
+                    <button class="btn btn-sm btn-warning mr-1" id="q-retry" data-i18n="queue.retry_failed"><i class="fas fa-redo"></i> Retry Failed</button>
+                    <button class="btn btn-sm btn-outline-danger mr-1" id="q-clear-failed" data-i18n="queue.delete_failed"><i class="fas fa-trash"></i> Delete Failed</button>
+                    <button class="btn btn-sm btn-danger" id="q-clear-all" data-i18n="queue.delete_all">Delete All</button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-sm">
+                      <thead>
+                        <tr>
+                          <th data-i18n="th.time">Time</th>
+                          <th data-i18n="th.job_id">Job ID</th>
+                          <th data-i18n="th.label">Label</th>
+                          <th data-i18n="th.printer">Printer</th>
+                          <th data-i18n="th.data">Data</th>
+                          <th data-i18n="th.source">Source</th>
+                          <th data-i18n="th.source_ip">Source IP</th>
+                          <th data-i18n="th.status">Status</th>
+                          <th data-i18n="th.error">Error</th>
+                          <th style="width: 150px;" data-i18n="th.action">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="queue-list"></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                  <h6 class="m-0 font-weight-bold text-primary" data-i18n="queue.history">Print History <small class="text-muted" data-i18n="queue.history_sub">(completed items)</small></h6>
+                  <input type="text" class="form-control form-control-sm" id="history-search" data-i18n-placeholder="queue.search_ph" placeholder="search job id / label / printer / data / ip..." style="max-width: 320px;">
+                </div>
+                <div class="card-body">
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-hover table-sm" id="history-table" width="100%" cellspacing="0">
+                      <thead>
+                        <tr>
+                          <th data-i18n="th.time">Time</th>
+                          <th data-i18n="th.job_id">Job ID</th>
+                          <th data-i18n="th.label">Label</th>
+                          <th data-i18n="th.printer">Printer</th>
+                          <th data-i18n="th.data">Data</th>
+                          <th data-i18n="th.source">Source</th>
+                          <th data-i18n="th.source_ip">Source IP</th>
+                          <th data-i18n="th.status">Status</th>
+                          <th data-i18n="th.error">Error</th>
+                          <th style="width: 150px;" data-i18n="th.action">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody></tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+        <!-- /.container-fluid -->
+
+      </div>
+      <!-- End of Main Content -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+  </div>
+  <!-- End of Page Wrapper -->
+
+  <!-- Modal: choose a label template before setting up a print queue -->
+  <div class="modal fade" id="chooseModal" tabindex="-1" role="dialog" aria-labelledby="chooseModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="chooseModalLabel" data-i18n="queue.choose_title">Choose a Label Template</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="sel-label" data-i18n="queue.choose_label">Label Template</label>
+            <select class="form-control" id="sel-label"><option value="" data-i18n="queue.choose_select">-- select label --</option></select>
+          </div>
+          <div class="row">
+            <div class="col-md-5">
+              <h6 class="m-0 font-weight-bold text-primary mb-2" data-i18n="queue.choose_preview">Template Preview</h6>
+              <div class="text-center bg-light p-2 rounded">
+                <img id="sel-preview" class="img-fluid label-preview" style="max-height: 220px;" />
+              </div>
+            </div>
+            <div class="col-md-7">
+              <h6 class="m-0 font-weight-bold text-primary mb-2" data-i18n="queue.choose_vars">Variables</h6>
+              <div id="sel-variables" class="mb-3"><p class="text-muted small mb-0" data-i18n="queue.pick_vars">select a label to list its variables</p></div>
+              <h6 class="m-0 font-weight-bold text-primary mb-2" data-i18n="queue.choose_printer">Printer <small class="text-muted" data-i18n="queue.choose_auto">(auto-filled from label binding)</small></h6>
+              <p id="sel-printer" class="mb-3 text-muted small" data-i18n="queue.pick_printer">select a label to show its printer</p>
+              <div class="alert alert-warning py-2 mb-0">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span data-i18n="queue.choose_warn">Before printing, please confirm that this printer is the one intended to print this label</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" data-i18n="btn.cancel">Cancel</button>
+          <button type="button" class="btn btn-primary" id="sel-next" disabled data-i18n="queue.choose_next"><i class="fas fa-arrow-right"></i> Next: Set up Print Queue</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: job detail / reprint -->
+  <div class="modal fade" id="jobModal" tabindex="-1" role="dialog" aria-labelledby="jobModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="jobModalLabel" data-i18n="queue.job_title">Job</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-lg-12 col-md-12">
+              <h6 class="m-0 font-weight-bold text-primary" data-i18n="btn.preview">Preview</h6>
+              <div id="imgContainer">
+                <img class="img-fluid shadow w-75 label-preview" />
+              </div>
+            </div>
+            <div class="col-lg-12 col-md-12" style="margin-top: 20px;">
+              <div class="form-group">
+                <h6 class="m-0 font-weight-bold text-primary">ZPL <small class="text-muted" data-i18n="queue.job_zpl_sub">(editable)</small></h6>
+                <textarea class="form-control" id="gzpl" data-i18n-placeholder="queue.job_zpl_ph" placeholder="generated ZPL" rows="10"></textarea>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="form-group">
+                <label for="job-printer-select" data-i18n="queue.job_reprint_on">Reprint on Printer</label>
+                <select class="form-control" id="job-printer-select"></select>
+              </div>
+            </div>
+            <div class="col-6 d-flex align-items-end">
+              <button class="btn btn-primary mb-3" id="reprint" data-i18n="queue.job_enqueue_reprint">Enqueue Reprint</button>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div class="col-lg-12 col-md-12">
+              <div class="form-group">
+                <h6 class="m-0 font-weight-bold text-primary" data-i18n="queue.job_data">Data sent with Job</h6>
+                <textarea class="form-control" id="job-data" data-i18n-placeholder="queue.job_data_ph" placeholder="data" rows="6" readonly></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scroll to Top Button-->
+  <a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+  </a>
+
+  <!-- Bootstrap core JavaScript-->
+  <script src="/vendor/jquery/jquery.min.js"></script>
+  <script src="/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Core plugin JavaScript-->
+  <script src="/vendor/jquery-easing/jquery.easing.min.js"></script>
+
+  <script src="/vendor/toastr/toastr.min.js"></script>
+
+  <!-- Custom scripts for all pages-->
+  <script src="/js/sb-admin-2.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/websocket.js"></script>
+
+  <!-- i18n: loads before page scripts so t() is available everywhere -->
+  <script src="/js/i18n.js"></script>
+  <script src="/js/locales/en.js"></script>
+  <script src="/js/locales/zh.js"></script>
+  <script src="/js/locales/ar.js"></script>
+
+  <script>
+    if (window.module) module = window.module;
+    var config = <%- JSON.stringify(config) %>;
+  </script>
+
+  <script src="/js/queue.js"></script>
+
+</body>
+
+</html>

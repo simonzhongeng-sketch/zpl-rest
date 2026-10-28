@@ -105,3 +105,10 @@ dist
 
 # TernJS port file
 .tern-port
+
+# ---- local runtime data / private artifacts (this deployment) ----
+.workbuddy/
+volumes/
+test/exe_func/
+test/*.bak-*
+test/mock_printer_received.txt

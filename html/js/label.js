@@ -1,286 +1,98 @@
+// Label list page: search, new (-> editor page), edit (-> editor page), delete.
 $(document).ready(function() {
 
-  $('#create').click(function(ev) {
-    $.ajax({
-      url: "/rest/label",
-      type: 'post',
-      contentType: 'application/json',
-      data: JSON.stringify({
-        name: $('#newname').val(),
-        width: $('#newwidth').val(),
-        height: $('#newheight').val()
-      }),
-      dataType: 'json',
-      success: function(data) {
-        toastr.info('label saved');
-        $('#newname').val("");
-        $('#newwidth').val("");
-        $('#newheight').val("");
-      },
-      error: function(data) {
-        toastr.error('creation failed')
-      }
+  var labels = [];
+  var printers = {}; // id -> printer record
+
+  function load() {
+    $.when($.getJSON('/rest/label'), $.getJSON('/rest/printer')).then(function(l, p) {
+      labels = l[0];
+      printers = {};
+      p[0].forEach(function(pr) { printers[pr._id] = pr; });
+      render();
     });
-  });
+  }
 
-  $('#test-printer').click(function(ev) {
-    $('#printerid').val("");
-    $('#printerid').data("printer","");
-    $(this).parent().find('a.dropdown-item').each(function() {
-      var $item = $(this);
-      if ($item.data("events") == undefined) {
-        $item.click(function(ev) {
-          var $this = $(this);
-          var $this = $(this);
-          $.getJSON("/rest/printer/", function(data) {
-            $.each(data, function(index, value) {
-              if (value._id == $this.data("id")) {
-                $('#printerid').val(value._id);
-                $('#printerid').data("printer",value);
-                if($('#labelid').val() && $('#printerid').val()){
-                  $("#imgContainer").find("img").attr("src","/rest/preview?printer="+encodeURIComponent($('#printerid').val())+"&label="+encodeURIComponent($('#labelid').val()));
-                }
-                enableTestButton();
-                return;
-              }
-            });
-          });
-        });
-      }
-    });
-  });
+  function render() {
+    var q = ($('#label-search').val() || '').toLowerCase();
+    var $tb = $('#label-table tbody').empty();
 
-  $('#update-label').click(function(ev) {
-    $(this).parent().find('a.dropdown-item').each(function() {
-      var $item = $(this);
-      if ($item.data("events") == undefined) {
-        $item.click(function(ev) {
-          var $this = $(this);
-          $.getJSON("/rest/label/", function(data) {
-            $.each(data, function(index, value) {
-              if (value._id == $this.data("id")) {
-                $('#labelid').val(value._id);
-                $('#editname').val(value.name);
-                $('#editname').data("original", value.name);
-                $('#editwidth').val(value.width);
-                $('#editwidth').data("original", value.width);
-                $('#editheight').val(value.height);
-                $('#editheight').data("original", value.height);
-                $('#editzpl').val(value.zpl);
-                $('#editzpl').data("original", value.zpl);
-                if($('#labelid').val() && $('#printerid').val()){
-                  $.ajax({
-                    url: "/rest/preview",
-                    type: 'post',
-                    contentType: 'application/json',
-                    data: JSON.stringify({
-                      printer: $('#printerid').val(),
-                      label: $('#labelid').val()
-                    }),
-                    dataType: 'json',
-                    success: function(data) {
-                      $("#imgContainer").find("img").attr("src","data:image/png;base64, "+data.img);
-                    },
-                    error: function(data) {
-                      toastr.error(JSON.stringify(data),'preview failed')
-                    }
-                  });
-                }
-                enableTestButton();
-              }
-            });
-          });
-        });
-      }
-    });
-  });
+    labels
+      .filter(function(l) {
+        if (!q) return true;
+        var bound = printers[l.printer_id];
+        return (l.name || '').toLowerCase().indexOf(q) !== -1 ||
+               (bound && bound.name.toLowerCase().indexOf(q) !== -1);
+      })
+      .sort(function(a, b) { return (a.name || '').localeCompare(b.name || ''); })
+      .forEach(function(l) {
+        var pr = printers[l.printer_id];
+        var $tr = $('<tr/>');
 
-  $('#update').click(function(ev) {
-    $.ajax({
-      url: "/rest/label",
-      type: 'post',
-      contentType: 'application/json',
-      data: JSON.stringify({
-        _id: $('#labelid').val(),
-        name: $('#editname').val(),
-        zpl: $('#editzpl').val(),
-        width: $('#editwidth').val(),
-        height: $('#editheight').val()
-      }),
-      dataType: 'json',
-      success: function(data) {
-        toastr.info('label updated');
-        if($('#labelid').val() && $('#printerid').val()){
-          $.ajax({
-            url: "/rest/preview",
-            type: 'post',
-            contentType: 'application/json',
-            data: JSON.stringify({
-              printer: $('#printerid').val(),
-              label: $('#labelid').val()
-            }),
-            dataType: 'json',
-            success: function(data) {
-              $("#imgContainer").find("img").attr("src","data:image/png;base64, "+data.img);
-            },
-            error: function(data) {
-              toastr.error(JSON.stringify(data),'preview failed')
-            }
-          });
-        }
-        $('#editname').data("original", $('#editname').val());
-        $('#editzpl').data("original", $('#editzpl').val());
-        $('#editwidth').data("original", $('#editwidth').val());
-        $('#editheight').data("original", $('#editheight').val());
-        enableTestButton();
-      },
-      error: function(data) {
-        toastr.error('update failed')
-      }
-    });
-  });
+        var $name = $('<td/>').text(l.name || '');
+        $tr.append($name);
 
-  $('#editname').change(function() {
-    enableTestButton();
-  });
+        $tr.append('<td><span dir="ltr">' + l.width + ' x ' + l.height + '</span></td>');
 
-  $('#editzpl').change(function() {
-    if($('#labelid').val() && $('#printerid').val()){
-      $.ajax({
-        url: "/rest/preview",
-        type: 'post',
-        contentType: 'application/json',
-        data: JSON.stringify({
-          printer: $('#printerid').val(),
-          label: $('#labelid').val(),
-          zpl: $('#editzpl').val()
-        }),
-        dataType: 'json',
-        success: function(data) {
-          $("#imgContainer").find("img").attr("src","data:image/png;base64, "+data.img);
-        },
-        error: function(data) {
-          toastr.error(JSON.stringify(data),'preview failed')
-        }
-      });
-    }
-    enableTestButton();
-  });
+        var type = l.type === 'visual' ? 'Visual' : 'ZPL';
+        $tr.append('<td><span class="badge badge-' + (l.type === 'visual' ? 'success' : 'secondary') + '">' + type + '</span></td>');
 
-  $('#delete-label').click(function(ev) {
-    $(this).parent().find('a.dropdown-item').each(function() {
-      var $item = $(this);
-      if ($item.data("events") == undefined) {
-        $item.click(function(ev) {
-          var $this = $(this);
-          $.ajax({
-            url: "/rest/label/" + $this.data("id"),
-            type: 'delete',
-            success: function(data){
-              toastr.info('label deleted');
-            },
-            error: function(data) {
-              toastr.error('delete failed')
-            }
-          });
-        });
-      }
-    });
-  });
-
-  $('#test').click(function() {
-
-    if (!$('#printerid').val()) {
-      toastr.info("Printer required")
-      return;
-    }
-    if (!$('#labelid').val()) {
-      toastr.info("Label required")
-      return;
-    }
-
-
-    var ok = true;
-    ok = ok && $('#editname').val() == $('#editname').data("original");
-    ok = ok && $('#editzpl').val() == $('#editzpl').data("original");
-    ok = ok && $('#editheight').val() == $('#editheight').data("original");
-    ok = ok && $('#editwidth').val() == $('#editwidth').data("original");
-    if(!ok){
-      toastr.info("Save the changed Label :)", "Save the Label")
-      return;
-    }
-
-    var dat = {}
-
-    if($('.json-data').length > 0){
-      try{
-        dat = JSON.parse($('.json-data').find('textarea').val());
-        console.log("data: ",dat);
-      }catch(err){
-        toastr.error(err,"JSON not valid");
-        return;
-      }
-    }else{
-      $('.print-param').find('input').each(function() {
-        $this = $(this);
-        dat[$this.attr("id")] = $this.val();
-      });
-    }
-
-    $.ajax({
-      url: "/rest/print",
-      type: 'post',
-      contentType: 'application/json',
-      data: JSON.stringify({
-        printer: $('#printerid').val(),
-        label: $('#labelid').val(),
-        data: dat
-      }),
-      dataType: 'json',
-      success: function(data) {
-        if(data.failed == false)
-          toastr.info('job was send');
-        else
-          toastr.error(data.error, 'job failed');
-      },
-      error: function(data) {
-        toastr.error('job failed')
-      }
-    });
-
-  });
-
-  function checkParams() {
-    var reg = /\${(.{1,})}/gm;
-    var mustache_reg = /{{(.*)}}/gm;
-    $('.print-param').remove();
-    var result;
-    var keys = [];
-    var duplicates = false;
-    if(mustache_reg.exec($('#editzpl').val())){
-      $('#printer-id-group').after('<div class="form-group print-param json-data"><label for="json">JSON - data</label><textarea class="form-control" id="json" placeholder="JSON" rows="5">{}</textarea></div>');
-    }else{
-      while ((result = reg.exec($('#editzpl').val())) !== null) {
-        console.log("Keys", keys);
-        if (keys.includes(result[1])) {
-          toastr.info("Key:" + result[1], "Key duplicate found");
-          duplicates = true;
+        var $pr = $('<td/>');
+        if (pr) {
+          $pr.append($('<span class="badge badge-primary mr-1"/>').text(pr.name));
         } else {
-          keys.push(result[1]);
-          $('#printer-id-group').after('<div class="form-group print-param"><label for="' + result[1] + '">' + result[1] + '</label><input type="text" class="form-control" id="' + result[1] + '" placeholder="' + result[1] + '"></div>');
+          $pr.append('<span class="text-muted">not bound</span>');
         }
-      }
+        $tr.append($pr);
+
+        var $act = $('<td/>');
+        var $edit = $('<button class="btn btn-sm btn-primary mr-1"/>').text(t('btn.edit'));
+        $edit.on('click', function() { location.href = '/label/edit?id=' + l._id; });
+        var $del = $('<button class="btn btn-sm btn-danger"/>').text(t('btn.delete'));
+        $del.on('click', function() {
+          if (!confirm(t('confirm.delete_label', {name: l.name || ''}))) return;
+          $.ajax({
+            url: '/rest/label/' + l._id,
+            type: 'delete',
+            success: function() {
+              toastr.info(t('msg.label_deleted'));
+              load();
+            },
+            error: function() {
+              toastr.error(t('msg.delete_failed'));
+            }
+          });
+        });
+        $act.append($edit, $del);
+        $tr.append($act);
+
+        $tb.append($tr);
+      });
+
+    if (!$tb.children().length) {
+      $tb.append('<tr><td colspan="5" class="text-center text-muted">no labels found</td></tr>');
+    }
   }
 
-    return duplicates;
-  }
+  $('#label-search').on('input', render);
 
-  function enableTestButton() {
-    var ok = true;
-    ok = ok && $('#printerid').val() != "";
-    ok = ok && $('#labelid').val() != "";
-    ok = ok && !checkParams();
-    $('#test').prop("disabled", !ok);
-  }
+  $('#new-label').on('click', function() {
+    location.href = '/label/edit';
+  });
 
+  // refresh list when a label changes in another tab (websocket broadcast)
+  if (typeof WSClient !== 'undefined') {
+    // websocket.js may expose hooks; safe-guarded below
+  }
+  try {
+    var sock = new WebSocket('ws://' + location.hostname + ':' + config.websocket_port);
+    sock.onmessage = function(msg) {
+      try {
+        var d = JSON.parse(msg.data);
+        if (d.source === 'label') load();
+      } catch (e) {}
+    };
+  } catch (e) {}
+
+  load();
 });
