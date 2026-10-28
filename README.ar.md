@@ -227,21 +227,6 @@ curl -X POST http://localhost:18420/rest/print \
 
 يُتعامل مع عرض الملصق وارتفاعه بالمليمتر (mm) في كل الواجهات البرمجية وواجهة الويب. أمّا قوالب ZPL نفسها فتُستخدم فيها النقاط (dot)؛ حوّل المليمتر إلى نقاط بدقّة الطابعة بوحدة النقطة لكل مليمتر (dpmm). مثال لطابعة 8dpmm ‏(300dpi): ‏84.8 مم × 8 = 1002 نقطة، فيُكتب عرض الطباعة `^PW1002`.
 
-## المساهمة
-
-تقارير الأخطاء وأفكار المزايا وطلبات الدمج مرحّب بها. يُفضّل فتح issue أولًا للتغييرات الكبيرة كي نناقش المقاربة. وإذا كنت تستخدم zpl-rest في بيئة إنتاج، فملاحظة قصيرة في [Discussions](https://github.com/mrothenbuecher/zpl-rest/discussions) عن طريقة إعدادك تساعد في تحديد أولويات العمل القادم.
-
-يمكنك أيضًا [المشاركة في هذا الاستبيان القصير](https://forms.gle/7CUv6PXQuTXQQgsR9).
-
-## شكر وتقدير
-
-- قالب الواجهة: [SB Admin 2](https://startbootstrap.com/themes/sb-admin-2/)
-- معاينة الملصقات: [zpl-renderer-js](https://github.com/Fabrizz/zpl-renderer-js)
-
-## دعم المشروع
-
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KNC9P27TLHGDE&source=url)
-
 ## الترخيص
 
 [MIT](LICENSE)

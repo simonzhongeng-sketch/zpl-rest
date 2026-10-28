@@ -225,21 +225,6 @@ zpl-rest 内置 MCP（Model Context Protocol）服务器，AI 工具（WorkBuddy
 
 API 与网页界面中的标签宽高统一以毫米（mm）表示。ZPL 模板本身使用点（dot）；按打印机分辨率（每毫米点数，dpmm）把毫米换算成点。以 8dpmm（300dpi）打印机为例：84.8 mm × 8 = 1002 点，打印宽度写 `^PW1002`。
 
-## 参与贡献
-
-欢迎提交缺陷报告、功能建议和 PR。较大的改动请先开 issue，方便我们先讨论方案。如果你在生产环境使用 zpl-rest，欢迎在 [Discussions](https://github.com/mrothenbuecher/zpl-rest/discussions) 里简单写一段你的使用场景，有助于决定后续开发优先级。
-
-你也可以[参与这份简短问卷](https://forms.gle/7CUv6PXQuTXQQgsR9)。
-
-## 致谢
-
-- 前端模板：[SB Admin 2](https://startbootstrap.com/themes/sb-admin-2/)
-- 标签预览：[zpl-renderer-js](https://github.com/Fabrizz/zpl-renderer-js)
-
-## 支持项目
-
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KNC9P27TLHGDE&source=url)
-
 ## 许可证
 
 [MIT](LICENSE)

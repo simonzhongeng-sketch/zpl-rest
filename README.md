@@ -225,21 +225,6 @@ Label previews are rendered locally by the built-in ZPL renderer (zpl-renderer-j
 
 Label width and height are handled in millimetres (mm) throughout the API and web UI. ZPL templates themselves use dots; convert mm to dots with the printer density in dots per mm (dpmm). Example for an 8dpmm (300dpi) printer: 84.8 mm x 8 = 1002 dots, printed width `^PW1002`.
 
-## Contributing
-
-Bug reports, feature ideas and pull requests are welcome. Please open an issue first for larger changes so we can discuss the approach. If you use zpl-rest in production, a short note in [Discussions](https://github.com/mrothenbuecher/zpl-rest/discussions) about your setup helps to decide what to work on next.
-
-You can also [take part in this short survey](https://forms.gle/7CUv6PXQuTXQQgsR9).
-
-## Credits
-
-- Frontend template: [SB Admin 2](https://startbootstrap.com/themes/sb-admin-2/)
-- Label previews: [zpl-renderer-js](https://github.com/Fabrizz/zpl-renderer-js)
-
-## Support the project
-
-[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KNC9P27TLHGDE&source=url)
-
 ## License
 
 [MIT](LICENSE)

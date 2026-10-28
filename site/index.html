@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>zpl-rest — 从任意系统打印 Zebra 标签</title>
+<meta name="description" content="zpl-rest 是一个自托管的 Zebra 标签打印服务：保存 ZPL 模板、填充变量、发送到打印机。可视化编辑器、打印队列、打印位置微调、内置 MCP 接口。">
+<meta property="og:title" content="zpl-rest — Zebra label printing over HTTP">
+<meta property="og:description" content="Self-hosted ZPL print server with a visual mm-grid editor, print queue and built-in MCP server.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%234e73df'/%3E%3Cpath d='M16 20h20a8 8 0 0 1 0 16H26l14 12' stroke='%23fff' stroke-width='5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#top">
+      <span class="brand-mark">Z</span>
+      <span class="brand-name">zpl<b>-rest</b></span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features" data-i18n="nav.features">功能</a>
+      <a href="#position" data-i18n="nav.position">打印位置</a>
+      <a href="#screens" data-i18n="nav.shots">截图</a>
+      <a href="#start" data-i18n="nav.start">快速开始</a>
+      <a class="ghost" href="https://github.com/simonzhongeng-sketch/zpl-rest" target="_blank" rel="noopener">
+        GitHub
+      </a>
+    </nav>
+    <div class="langs" role="group" aria-label="Language">
+      <button type="button" data-lang="zh" class="on">中文</button>
+      <button type="button" data-lang="en">EN</button>
+      <button type="button" data-lang="ar">العربية</button>
+    </div>
+  </div>
+</header>
+
+<main id="top">
+
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <p class="eyebrow" data-i18n="hero.eyebrow">自托管 · 开源 · MIT</p>
+      <h1 data-i18n="hero.title">从任意系统打印 Zebra 标签</h1>
+      <p class="lead" data-i18n="hero.lead">
+        保存 ZPL 模板，把 JSON 里的变量填进去，通过网络发给打印机。可视化编辑器、打印队列、打印位置微调、MCP 接口，一个本地服务全包。
+      </p>
+      <div class="cta">
+        <a class="btn primary" href="https://github.com/simonzhongeng-sketch/zpl-rest/releases/latest" target="_blank" rel="noopener" data-i18n="hero.download">下载 v1.1.0</a>
+        <a class="btn" href="https://github.com/simonzhongeng-sketch/zpl-rest" target="_blank" rel="noopener" data-i18n="hero.source">查看源码</a>
+        <a class="btn" href="https://github.com/simonzhongeng-sketch/zpl-rest#readme" target="_blank" rel="noopener" data-i18n="hero.docs">文档</a>
+      </div>
+      <ul class="badges">
+        <li>Windows x64 · <span data-i18n="hero.b1">免安装 exe + 便携包</span></li>
+        <li><span data-i18n="hero.b2">三语界面</span></li>
+        <li>MCP · REST · Web UI</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="strip">
+    <div class="wrap strip-grid">
+      <div><strong>18420</strong><span data-i18n="strip.ports">REST + Web UI（WS 18421 / MCP 18422）</span></div>
+      <div><strong>16</strong><span data-i18n="strip.tools">MCP 工具</span></div>
+      <div><strong>3</strong><span data-i18n="strip.langs">界面语言</span></div>
+      <div><strong>0</strong><span data-i18n="strip.cloud">外发数据 · 预览本地渲染</span></div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="wrap">
+      <h2 data-i18n="features.title">主要功能</h2>
+      <p class="section-lead" data-i18n="features.lead">打印这件事需要的东西都在这里，不需要再写 socket 代码。</p>
+      <div class="cards" id="feature-cards"></div>
+    </div>
+  </section>
+
+  <section id="position" class="section alt">
+    <div class="wrap">
+      <h2 data-i18n="pos.title">打印位置：一条 ^LH 说清</h2>
+      <p class="section-lead" data-i18n="pos.lead">
+        ZPL 每份格式只有一个原点。zpl-rest 从两个层级合成它，全部按毫米处理，只取整一次。
+      </p>
+      <pre class="formula"><code>^LH = round((<span data-i18n="pos.f1">打印机基础原点</span> + <span data-i18n="pos.f2">左/上边距</span> + <span data-i18n="pos.f3">偏移 X/Y</span>) × dpmm)</code></pre>
+      <div class="grid3" id="pos-items"></div>
+    </div>
+  </section>
+
+  <section id="screens" class="section">
+    <div class="wrap">
+      <h2 data-i18n="shots.title">界面截图</h2>
+      <p class="section-lead" data-i18n="shots.lead">点开看大图。截图随界面语言切换。</p>
+      <div class="shots" id="shots"></div>
+    </div>
+  </section>
+
+  <section id="start" class="section alt">
+    <div class="wrap">
+      <h2 data-i18n="start.title">快速开始</h2>
+      <div class="start-grid">
+        <div class="start-col">
+          <h3 data-i18n="start.node">Node.js</h3>
+          <pre class="code"><code>git clone https://github.com/simonzhongeng-sketch/zpl-rest.git
+cd zpl-rest
+npm install
+npm start</code></pre>
+          <p class="hint" data-i18n="start.node.hint">然后打开 http://localhost:18420</p>
+        </div>
+        <div class="start-col">
+          <h3 data-i18n="start.win">Windows</h3>
+          <p data-i18n="start.win.body">下载 Release 里的单文件 exe 双击运行；装有企业终端防护的机器建议用便携目录包（加壳单文件可能被启发式查杀）。</p>
+          <pre class="code"><code># 便携包
+npm run build:win:portable</code></pre>
+        </div>
+        <div class="start-col">
+          <h3 data-i18n="start.mcp">MCP 接入</h3>
+          <p data-i18n="start.mcp.body">AI 工具直接管理标签、渲染预览、驱动打印。</p>
+          <pre class="code"><code>{
+  "mcpServers": {
+    "zpl-rest": {
+      "url": "http://localhost:18422/mcp"
+    }
+  }
+}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot-inner">
+    <p>
+      <strong>zpl-rest</strong> · MIT ·
+      <span data-i18n="foot.based">基于上游 mrothenbuecher/zpl-rest 的定制版本</span>
+    </p>
+    <p class="foot-links">
+      <a href="https://github.com/simonzhongeng-sketch/zpl-rest" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://github.com/simonzhongeng-sketch/zpl-rest/releases" target="_blank" rel="noopener" data-i18n="foot.releases">发布版本</a>
+      <a href="https://github.com/simonzhongeng-sketch/zpl-rest/blob/master/CHANGES.md" target="_blank" rel="noopener" data-i18n="foot.changes">变更记录</a>
+    </p>
+  </div>
+</footer>
+
+<script src="assets/site.js"></script>
+</body>
+</html>

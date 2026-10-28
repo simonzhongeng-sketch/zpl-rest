@@ -1,5 +1,13 @@
 # zpl-rest 变更记录
 
+## 2026-10-28 README 精简 + Release 便携包 + GitHub Pages
+
+- 三份 README（en/zh/ar）删除 Contributing、Credits、Support the project 三个章节（含问卷与赞助链接），保留 License。
+- `npm run build:win:portable` 构建 `dist/zpl-rest-portable-20261028-1756.zip`（77MB / 10110 条目，中文文件名带 UTF-8 标志）。冒烟测试：解压后用包内 node.exe 起服务，ZPL_DATA_DIR 隔离 + 备用端口配置生效，REST CRUD / 预览渲染（WASM）/ MCP initialize 全通过，测试数据即用即删。已作为第二个附件上传到 Release v1.1.0（`zpl-rest-portable-20261028.zip`），Release 说明同步更新。
+- 新增 GitHub Pages 站点 `site/`：单页 + 三语切换（zh/en/ar，RTL 支持），功能卡片、^LH 公式、截图画廊（引用 `img/<lang>/`）、快速开始；截图在 CI 构建期拷贝进产物（`site/img/` 已 gitignore），仓库不存双份。新增 `.github/workflows/pages.yml`（actions/deploy-pages@v4，push master 触发 + 手动）。
+- Pages 已启用 `build_type=workflow`，站点地址 https://simonzhongeng-sketch.github.io/zpl-rest/
+- 本地验证：静态服务 + Edge 三语各 3 屏截图，4/4 图片加载、0 控制台错误。
+
 ## 2026-10-28 README 截图更新
 
 - 旧截图（上游仓库 screenshot*.png，为改造前的界面）替换为 1.1.0 实机截图：按界面语言分三套，`img/en|zh|ar/` 各含 dashboard / queue / label-editor / printer-position 四张（Playwright + Edge 对本机 18420 实拍，1600px 宽）。

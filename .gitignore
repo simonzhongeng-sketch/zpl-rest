@@ -112,3 +112,6 @@ volumes/
 test/exe_func/
 test/*.bak-*
 test/mock_printer_received.txt
+
+# generated at Pages build time
+site/img/
